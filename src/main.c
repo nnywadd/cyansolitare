@@ -56,8 +56,11 @@ static void load_css(void) {
         "}"
         ".card-corner { "
         "  font-family: \"JetBrains Mono\", monospace; "
-        "  font-size: 80px; "
+        "  font-size: 85px; "
         "  font-weight: bold; padding: 15px; line-height: 1.0; "
+        "}"
+        ".card-corner-bottom { "
+        "  transform: rotate(180deg); " /* Authenticity for the bottom corners */
         "}"
         ".card-center-watermark { "
         "  font-family: \"JetBrains Mono\", monospace; "
@@ -68,7 +71,7 @@ static void load_css(void) {
         "}"
         ".card-center-rank { "
         "  font-family: \"JetBrains Mono\", monospace; "
-        "  font-size: 280px; "
+        "  font-size: 320px; " /* Scaled massively for the ~40% requirement */
         "  font-weight: bold; "
         "  opacity: 1.0; "
         "}"
@@ -274,17 +277,28 @@ static void refresh_card_visual(Card *card) {
     const char *suit_sym = get_suit_sym(card->suit);
     const char *rank_str = get_rank_str(card->rank);
 
+    /* TOP ROW: Top-Left and Top-Right Corners */
     GtkWidget *top_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    
     GtkWidget *tl_label = gtk_label_new(g_strdup_printf("%s\n%s", rank_str, suit_sym));
-    gtk_widget_add_css_class(tl_label, "card-corner"); gtk_widget_add_css_class(tl_label, color_class);
+    gtk_widget_add_css_class(tl_label, "card-corner"); 
+    gtk_widget_add_css_class(tl_label, color_class);
     gtk_widget_set_halign(tl_label, GTK_ALIGN_START);
     gtk_box_append(GTK_BOX(top_row), tl_label);
+
+    GtkWidget *tr_label = gtk_label_new(g_strdup_printf("%s\n%s", rank_str, suit_sym));
+    gtk_widget_add_css_class(tr_label, "card-corner"); 
+    gtk_widget_add_css_class(tr_label, color_class);
+    gtk_widget_set_halign(tr_label, GTK_ALIGN_END);
+    gtk_widget_set_hexpand(tr_label, TRUE); // Push right
+    gtk_box_append(GTK_BOX(top_row), tr_label);
+    
     gtk_box_append(GTK_BOX(box), top_row);
 
     /* Layered Z-Axis Center */
     GtkWidget *overlay = gtk_overlay_new();
     gtk_widget_set_hexpand(overlay, TRUE);
-    gtk_widget_set_vexpand(overlay, TRUE);
+    gtk_widget_set_vexpand(overlay, TRUE); // Push top/bottom to edges
 
     GtkWidget *watermark = gtk_label_new(suit_sym);
     gtk_widget_add_css_class(watermark, "card-center-watermark");
@@ -302,11 +316,24 @@ static void refresh_card_visual(Card *card) {
 
     gtk_box_append(GTK_BOX(box), overlay);
 
+    /* BOTTOM ROW: Bottom-Left and Bottom-Right Corners (Rotated) */
     GtkWidget *bot_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+    
+    GtkWidget *bl_label = gtk_label_new(g_strdup_printf("%s\n%s", rank_str, suit_sym));
+    gtk_widget_add_css_class(bl_label, "card-corner"); 
+    gtk_widget_add_css_class(bl_label, "card-corner-bottom");
+    gtk_widget_add_css_class(bl_label, color_class);
+    gtk_widget_set_halign(bl_label, GTK_ALIGN_START);
+    gtk_box_append(GTK_BOX(bot_row), bl_label);
+
     GtkWidget *br_label = gtk_label_new(g_strdup_printf("%s\n%s", rank_str, suit_sym));
-    gtk_widget_add_css_class(br_label, "card-corner"); gtk_widget_add_css_class(br_label, color_class);
-    gtk_widget_set_halign(br_label, GTK_ALIGN_END); gtk_widget_set_hexpand(br_label, TRUE);
+    gtk_widget_add_css_class(br_label, "card-corner"); 
+    gtk_widget_add_css_class(br_label, "card-corner-bottom");
+    gtk_widget_add_css_class(br_label, color_class);
+    gtk_widget_set_halign(br_label, GTK_ALIGN_END); 
+    gtk_widget_set_hexpand(br_label, TRUE); // Push right
     gtk_box_append(GTK_BOX(bot_row), br_label);
+    
     gtk_box_append(GTK_BOX(box), bot_row);
 }
 
@@ -473,9 +500,11 @@ int main(int argc, char **argv) {
     gtk_menu_button_set_icon_name(GTK_MENU_BUTTON(menu_btn), "open-menu-symbolic");
     
     GtkWidget *popover = gtk_popover_new();
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_widget_set_margin_start(vbox, 10); gtk_widget_set_margin_end(vbox, 10);
-    gtk_widget_set_margin_top(vbox, 10); gtk_widget_set_margin_bottom(vbox, 10);
+    
+    /* VBox Refactored for Spacing and Margins */
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 15);
+    gtk_widget_set_margin_start(vbox, 20); gtk_widget_set_margin_end(vbox, 20);
+    gtk_widget_set_margin_top(vbox, 20); gtk_widget_set_margin_bottom(vbox, 20);
 
     GtkWidget *btn_restart = gtk_button_new_with_label("Restart Game");
     g_signal_connect(btn_restart, "clicked", G_CALLBACK(on_menu_restart), NULL);
@@ -494,12 +523,15 @@ int main(int argc, char **argv) {
     
     gtk_header_bar_pack_start(GTK_HEADER_BAR(header_bar), menu_btn);
 
+    /* HeaderBar Layout Pad Polish */
     game_state.score_label = gtk_label_new("SCORE: 0");
-    gtk_widget_set_margin_start(game_state.score_label, 20);
+    gtk_widget_set_margin_start(game_state.score_label, 30);
+    gtk_widget_set_margin_end(game_state.score_label, 15);
     gtk_header_bar_pack_end(GTK_HEADER_BAR(header_bar), game_state.score_label);
 
     game_state.timer_label = gtk_label_new("TIME: 00:00");
-    gtk_widget_set_margin_end(game_state.timer_label, 20);
+    gtk_widget_set_margin_end(game_state.timer_label, 30);
+    gtk_widget_set_margin_start(game_state.timer_label, 15);
     gtk_header_bar_pack_end(GTK_HEADER_BAR(header_bar), game_state.timer_label);
 
     gtk_box_append(GTK_BOX(main_box), header_bar);
