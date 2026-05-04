@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Cyan Solitaire
+Comment=Lightweight Klondike Solitaire
+Exec=cyansolitaire
+Icon=games-cards
+Terminal=false
+Categories=Game;CardGame;
+Keywords=solitaire;cards;klondike;
+StartupNotify=true
