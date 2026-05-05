@@ -1,11 +1,13 @@
 [Desktop Entry]
-Version=1.0
+Version=1.1
 Type=Application
-Name=Cyan Solitaire
-Comment=Lightweight Klondike Solitaire
+Name=Cyan Solitaire Pro
+GenericName=Klondike Solitaire
+Comment=High-fidelity Cyberpunk Klondike Solitaire with 60FPS easing animations
 Exec=cyansolitaire
 Icon=games-cards
 Terminal=false
-Categories=Game;CardGame;
-Keywords=solitaire;cards;klondike;
+Categories=Game;CardGame;GTK;
+Keywords=solitaire;cards;klondike;patience;cyberpunk;neon;
 StartupNotify=true
+PrefersNonDefaultGPU=true
